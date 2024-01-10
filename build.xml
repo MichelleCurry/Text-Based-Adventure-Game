@@ -1,0 +1,59 @@
+<!--
+This is a super simple ANT build file, meant to simply build all the classes just to make sure that all the .java files
+in a directory compile correctly and build a simple "Executable Jar".
+
+This file is actually optional, as you can build the project easily from within your IDE. However, if you want to build
+from the command line, and/or you want to build a "stand-alone" executable jar, then this file is helpful.
+
+ANT can be download from: https://ant.apache.org/       Documentation: https://ant.apache.org/manual/using.html
+
+(Building full, stand-alone executables is also possible, but it's a bit more involved.)
+
+Note: ANT is a "simple" build tool (compared to Maven or Gradle), that handle most common build tasks.
+Much like SVN vs. GIT, other tools *may* be more "powerful", but often times, the added "power" doesn't justify the
+added complexity, especially if you don't really need those extra features.
+
+To use this build file, you must have ANT installed on your system. (See above link for instructions on how to install.)
+Once installed, you can run the build with the command (from the directory containing this file):
+
+    ant jar
+
+After the build is complete, you may run the program with the command:  java -jar Game.jar
+-->
+
+<project default="compile">
+    <!-- Global properties for this build -->
+
+    <property name="build" location="build"/>
+    <property name="src" location="src"/>
+
+    <!-- Build/Verify -->
+    <target name="compile">
+        <!-- <echo>Start Compiling: ${basedir}</echo> -->
+        <mkdir dir="${build}"/>
+        <javac srcdir="${src}" destdir="${build}" includeantruntime="false" fork="true" source="17" target="17"
+            debug="true" deprecation="true" optimize="false" failonerror="true">
+
+            <compilerarg value="-Xlint:unchecked"/>
+        </javac>
+        <!-- <echo>End Compiling: ${basedir}</echo> -->
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="Game.jar">
+            <fileset dir="${build}"/>
+            <manifest>
+                <attribute name="Main-Class" value="objectAdventure.Main"/>
+            </manifest>
+        </jar>
+
+        <antcall target="clean"/>
+
+        <echo level="info">To run from a command line: java -jar Game.jar</echo>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build}"/>
+    </target>
+
+</project>

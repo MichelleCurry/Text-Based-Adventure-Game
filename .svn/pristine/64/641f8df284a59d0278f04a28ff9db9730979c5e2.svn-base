@@ -1,0 +1,59 @@
+package objectAdventure.room.roomImpl;
+// $Id$
+
+import objectAdventure.item.itemImpl.DemoItem;
+import objectAdventure.room.Room;
+
+/**
+ * The StartRoom is the first room the player will see when they start the game.
+ *
+ * @author Adam J. Conover, COSC436/COSC716
+ */
+public class StartRoom extends Room {
+
+    /**
+     * Constructor for the room, it must be constructed with an ID!!!
+     *
+     * @param roomId The ID of the room.
+     */
+    public StartRoom(final int roomId) {
+        super(roomId);
+
+        String description = """
+            This is the main room of the game. Note that long descriptions
+            can be spread across multiple lines using the triple quote syntax.
+            See the source code for this room for an example.""";
+
+        // Set the room description.
+        super.setRoomDescription(description);
+
+        // Add an item to the room.
+        var aDemoItem = new DemoItem();
+        super.addItem(aDemoItem);
+    }
+
+    /**
+     * Factory methods are used to create new objects using static methods, and this is sometimes a better approach than
+     * using a constructor directly. It allows the constructor to complete the essential initialization of the object,
+     * and then the factory method can perform additional initialization on a fully instantiated object.
+     *
+     * @param roomId The ID of the room.
+     * @return A new room.
+     */
+    public static Room createRoom(final int roomId) {
+        Room theRoom = new StartRoom(roomId);
+
+        // Additional initialization can be performed here that could potentially be overridden by subclasses or if
+        // 'this' needs to be passed to another method.
+
+        return theRoom;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getRoomAuthor() {
+        return "Adam J. Conover";
+    }
+}

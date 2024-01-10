@@ -1,0 +1,372 @@
+package objectAdventure.item.itemImpl;
+
+import objectAdventure.common.Observable;
+import objectAdventure.common.Observer;
+import objectAdventure.item.*;
+import java.util.List;
+import java.util.*;
+
+/**
+ * A sample item for demonstration purposes.
+ *
+ * @author Michele Curry, COSC436/COSC716
+ */
+public class bottle_mlc implements Item, Observable<String> {
+
+    private String description;
+    private final String displayName;
+    State currentState;
+
+
+    List<Observer<String>> observers = new LinkedList<>();
+
+    /**
+     * Constructor
+     */
+    public bottle_mlc() {
+        this.displayName = "Glass Bottle";
+        this.description = "The bottle is quite dusty but there is still a deep mahogany liquid inside";
+        this.currentState = new UntakenState();
+    }
+
+    /**
+     * THIS IS JUST A SAMPLE.
+     *
+     * @return The item description.
+     */
+    @Override
+    public String getItemFullDescription() {
+        return this.description;
+    }
+
+    @Override
+    public String getItemDisplayName() {
+        return this.displayName;
+    }
+
+    /**
+     * Item Can be picked up and moved.
+     *
+     * @return True
+     */
+    @Override
+    public boolean isTransferable() {
+        boolean isAnchored = false;
+        return !isAnchored;
+    }
+
+    @Override
+    public List<String> getItemAliases() {
+        return List.of("bottle", "glass bottle");
+    }
+
+    @Override
+    public void addObserver(Observer<String> theObserver) {
+        this.observers.add(theObserver);
+    }
+
+    @Override
+    public void removeObserver(Observer<String> theObserver) {
+       this.observers.remove(theObserver);
+    }
+
+    @Override
+    public void notifyObservers(String notificationObject) {
+        for(var observer: this.observers){
+            observer.update(notificationObject);
+        }
+    }
+
+
+    public interface State {
+
+
+        void OpenBottle();
+
+        void CloseBottle();
+
+        void InspectBottle();
+
+        void DropBottle();
+
+        void UseBottle();
+
+        void HoldBottle();
+    }
+
+    public class OpenState implements State {
+
+        @Override
+        public void OpenBottle() {
+            System.out.println("""
+                                it is already open
+                                """);
+        }
+
+        @Override
+        public void CloseBottle() {
+            System.out.println("""
+                                The cap is too old to put on again.
+                                """);
+        }
+
+        @Override
+        public void InspectBottle() {
+            System.out.println("""
+                                The liquid in the bottle smell rancid
+                                and slightly sweet.
+                               """);
+        }
+
+        @Override
+        public void DropBottle() {
+            System.out.printf("""
+                                You drop the bottle and it shatters. s%
+                                The liquid is all over the ground and the smell makes you gag
+                                """,description);
+            System.out.println();
+            currentState = new DroppedState();
+        }
+
+        @Override
+        public void UseBottle() {
+            System.out.println("""
+                                You chug the entire bottle and immedately contemplate chopping off your tongue.
+                                """); 
+            currentState = new EmptyState();
+            
+        }
+
+        @Override
+        public void HoldBottle() {
+            System.out.println("""
+                                you're already holding the bottle.
+                                """);
+        }
+
+    }
+
+    public class DroppedState implements State {
+
+        @Override
+        public void OpenBottle() {
+            System.out.println("""
+                                There's nothing left to open.
+                                """);
+        }
+
+        @Override
+        public void CloseBottle() {
+            System.out.println("""
+                                There's nothing left to close.
+                                """);
+        }
+
+        @Override
+        public void InspectBottle() {
+            System.out.println("""
+                                The air smells rancid and the ground is a glittery mess.
+                                """);
+        }
+
+        @Override
+        public void DropBottle() {
+            System.out.printf("You've already dropped the bottle. s%", description);
+            System.out.println();
+        }
+
+        @Override
+        public void UseBottle() {
+            System.out.println("""
+                                You can't drink anything, the liquid has soaked into the ground.
+                                """);
+        }
+        
+        @Override
+        public void HoldBottle() {
+            System.out.println("""
+                                There only glass pieces left, you're better off without it.
+                                """);
+        }
+        
+    }
+    
+    public class EmptyState implements State {
+
+        @Override
+        public void OpenBottle() {
+            System.out.println("""
+                                The bottle is already open.
+                                """);
+        }
+
+        @Override
+        public void CloseBottle() {
+            System.out.println("""
+                                The cap is too old to put on again.
+                                """);
+        }
+
+        @Override
+        public void InspectBottle() {
+            description = "The glass bottle is empty.";
+            System.out.printf(" %s The smell seems to have lingered.",description);
+            System.out.println();
+        }
+
+        @Override
+        public void DropBottle() {
+            description = "All that's left of the bottle is a million little pieces.";
+            System.out.printf("You drop the bottle. %s", description);    
+            System.out.println();                
+            currentState = new DroppedState();
+        }
+
+        @Override
+        public void UseBottle() {
+            System.out.println("""
+                                There's nothing left to drink, besides you'd rather drink poison 
+                                than drink whatever that was agin.
+                                """);
+        }
+        
+        @Override
+        public void HoldBottle() {
+            System.out.println("""
+                                you're already holding the bottle.
+                                """);
+        }
+        
+    }
+    
+    public class TakenState implements State {
+
+        @Override
+        public void OpenBottle() {
+            System.out.println("""
+                                You open the bottle.
+                                """);
+            currentState = new OpenState();
+        }
+
+        @Override
+        public void CloseBottle() {
+            System.out.println("""
+                                The bottle is still closed.
+                                """);
+        }
+
+        @Override
+        public void InspectBottle() {
+            System.out.printf("%s Maybe you can smell what's inside.", description);
+            System.out.println();
+        }
+
+        @Override
+        public void DropBottle() {
+            description = """
+                All that's left of the bottle is a million little pieces.
+                """;
+                System.out.printf("""
+                                    You drop the bottle and it shatters. s%
+                                    The liquid is all over the ground and the smell makes you gag
+                                    """,description);                    
+            System.out.println();
+            currentState = new DroppedState();
+        }
+
+        @Override
+        public void UseBottle() {
+            System.out.println("""
+                                You can't drink it before opening the bottle.
+                                """);
+        }
+        
+        @Override
+        public void HoldBottle() {
+            System.out.println("""
+                                you're already holding the bottle.
+                                """);
+        }
+        
+    }
+
+    public class UntakenState implements State {
+
+        @Override
+        public void OpenBottle() {
+            System.out.println("""
+                                You need to hold the bottle before opening it.
+                                """);
+        }
+
+        @Override
+        public void CloseBottle() {
+            System.out.println("""
+                                You need to open the bottle before closing it.
+                                """);
+        }
+
+        @Override
+        public void InspectBottle() {
+            System.out.println(description);
+        }
+
+        @Override
+        public void DropBottle() {
+            description = """
+                            All that's left of the bottle is a million little pieces.
+                            """;
+                System.out.printf("""
+                                    You drop the bottle and it shatters. s%
+                                    The liquid is all over the ground and the smell makes you gag
+                                    """,description); 
+            System.out.println();                         
+            currentState = new DroppedState();
+        }
+
+        @Override
+        public void UseBottle() {
+            System.out.println("""
+                                You can't drink it before opening the bottle.
+                                """);
+        }
+        
+        @Override
+        public void HoldBottle() {
+            System.out.println("""
+                                You pick up the bottle.
+                                """);                 
+            currentState = new TakenState();
+        }
+        
+    }
+
+    
+
+    /**
+     * Item Interaction Example
+     *
+     * @see objectAdventure.item.ItemInteractionEvent
+     **/
+    @Override
+    public InteractionResult itemInteractionHandler(ItemInteractionEvent ie) {
+        return switch (ie) {
+            case TAKE:
+                    this.currentState.HoldBottle();
+            case USE:
+                    this.currentState.UseBottle();
+            case INSPECT:
+                    this.currentState.InspectBottle();
+            case DROP:
+                    this.currentState.DropBottle();
+            case ACTIVATE:
+                this.currentState.OpenBottle();
+            case DEACTIVATE:
+                this.currentState.CloseBottle();
+            default:
+                // Interactions not handled by this item should be handled by the game core.
+                yield InteractionResult.success("Hmmmm you can't "+ie+" the bottle try something else.");
+        };
+    }
+}

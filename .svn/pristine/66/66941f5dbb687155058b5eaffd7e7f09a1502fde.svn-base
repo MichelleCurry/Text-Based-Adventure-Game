@@ -1,0 +1,152 @@
+package objectAdventure.item.itemImpl;
+import objectAdventure.common.Observer;
+import objectAdventure.item.InteractionResult;
+import objectAdventure.item.Item;
+import objectAdventure.item.ItemInteractionEvent;
+import java.util.List;
+import objectAdventure.room.roomImpl.Aperez;
+
+public class WoK implements Item{
+    public static boolean isHoldingWoK = false;
+    public static boolean isFinishedWoK = false;
+    public static List<String> aliases = List.of("book","Book");
+    private String displayName;
+    private String description;
+    private int bookmark = 0;
+    private String ln = "--------------------------------------------------"; 
+    private Aperez room;
+
+
+    public WoK(Observer bob) {
+        this.displayName = "book";
+        this.description = "The book is titled the Way of Kings.";
+    }
+
+    @Override
+    public String getItemFullDescription() {
+        return this.description;
+    }
+    @Override
+    public String getItemDisplayName() {
+        return this.displayName;
+    }
+    @Override
+    public boolean isTransferable() {
+        boolean isAnchored = false;
+        return !isAnchored;
+    }
+    @Override
+    public List<String> getItemAliases() {
+        //Don't let player use the name of the book if they don't know it
+        if (this.displayName.toUpperCase().equals("BOOK")){
+            aliases = List.of("book","Book");
+        }
+        aliases =  List.of("WoK", "wok", "Way of Kings", "Way Of Kings","book","Book");
+        return aliases;
+    }
+    public List<String> aliases(){
+        return getItemAliases();
+    }
+
+
+    @Override
+    public InteractionResult itemInteractionHandler(ItemInteractionEvent ie) {
+        return switch (ie) {
+            case DROP -> {
+                isHoldingWoK = false;
+                yield InteractionResult.success(ie.name());
+            }
+            case TAKE -> {
+                isHoldingWoK = true;
+                yield InteractionResult.success("You drop the book.");
+            }
+            //event USE is used because there is no READ
+            case USE -> {
+                if (isHoldingWoK) {
+                    //Let player reference the book using its title after title is read
+                    if (bookmark == 0){
+                        this.displayName = "Way of Kings";
+                        this.description = "\n"+ ln + "\n\n                 The Way of Kings\n";
+                    }
+                    if (bookmark == 1){
+                        this.description = "The love of men is a frigid thing, a mountain stream only three steps from the ice.\nWe are his. Oh Stormfather... we are his.\nIt is but a thousand days, and the Everstorm comes.";
+                    }
+                    if (bookmark == 2){
+                        this.description = "\nTen people, with Shardblades alight, standing before a wall of black and white and red.\n";
+                    }
+                    if (bookmark == 3){
+                        this.description = "Ten orders. We were loved, once.\nWhy have you forsaken us, Almighty!\nShard of my soul, where have you gone?";
+                    }
+                    if (bookmark == 4){
+                        this.description = "A man stood on a cliffside and watched his homeland fall into dust.\nThe waters surged beneath, so far beneath.\nAnd he heard a child crying. They were his own tears.";
+                    }
+                    if (bookmark == 5){
+                        this.description = "They come from the pit, two dead men, a heart in their hands.\nNow, I know that I have seen true glory.\n";
+                    }
+                    if (bookmark == 6){
+                        this.description = "I have seen the end, and have heard it named.\nThe Night of Sorrows, the True Desolation.\nThe Everstorm.";
+                    }
+                    if (bookmark == 7){
+                        this.description = "I'm dying, aren't I? Healer, why do you take my blood?\nWho is that beside you, with his head of lines?\nI can see a distant sun, dark and cold, shining in a black sky.";
+                    }
+                    if (bookmark == 8){
+                        this.description = "You've killed me.\nBastards, you've killed me!\nWhile the sun is still hot, I die!";
+                    }
+                    if (bookmark == 9){
+                        this.description = "\nThree of sixteen ruled, but now the Broken One reigns.\n";
+                    }
+                    if (bookmark == 10){
+                        this.description = "Above the final void I hang, friends behind, friends before.\nThe feast I must drink clings to their faces, and the words I must speak spark in my mind.\nThe old oaths will be spoken anew.";
+                    }
+                    if (bookmark == 11){
+                        this.description = "\nHandwritten on the inside of the back cover:\n"+ ln + "\nLife before death,\nstrength before weakness,\njourney before destination.";
+                        isFinishedWoK = true;
+                    }
+
+                    var sb = new StringBuilder();
+
+                    if(bookmark != 0 && bookmark != 11){
+                        sb.append("\nChapter #")
+                          .append(bookmark)
+                          .append(":\n")
+                          .append(ln)
+                          .append("\n");
+                    }
+
+                    sb.append(this.description)
+                      .append("\n")
+                      .append(ln);
+
+                    bookmark += 1;
+                    if (bookmark == 12)
+                        bookmark = 0;
+
+                    yield InteractionResult.success(sb.toString());
+                }else{
+                    //Pick up the book, dingus.
+                    yield InteractionResult.failure("You need to pick up the "+ this.displayName + " to read it.");
+                }
+
+            }
+            case INSPECT -> {
+                //Let player reference the book using its title after its inspected
+                this.displayName = "Way of Kings";
+                //Tell user book name
+                this.description = "A book titled \"Way of Kings\". Luckily, in a language you can read.";
+                yield InteractionResult.success(this.description);
+            }
+            case ACTIVATE -> {
+                if(isFinishedWoK){
+                    Shardblade.isBonded = true;
+                    room.hasBlade = true;
+                    Shardblade.isAnchored = false;
+                    Shardblade.displayName = "shardblade";
+                    yield InteractionResult.success("You lick your lips and speak the words: \n\n\"Life before death.\"\n\"Strength before weakness.\"\n\"Journey before destination.\"");
+                }
+                yield InteractionResult.success(ie.name());
+            }
+            default -> InteractionResult.success("");
+        };
+    }
+}
+

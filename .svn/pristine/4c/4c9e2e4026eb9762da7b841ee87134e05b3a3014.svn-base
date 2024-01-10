@@ -1,0 +1,81 @@
+package objectAdventure.item;
+// $Date$
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * The ItemInteractionEvent enum is used to represent the different
+ * types of interactions that can be performed on an item.
+ *
+ * @author Adam J. Conover, COSC436/COSC716
+ */
+public enum ItemInteractionEvent {
+    TAKE("Get", "Take"), // Take an Item.  (Take is an alias for Get)
+    DROP("Drop"), // Drop an Item.
+    INSPECT("Inspect", "Examine"), // Inspect an Item.
+    USE("Use"), // Use an Item.
+    PUSH("Push"), // Push an Item.
+    PULL("Push"), // Pull an Item.
+    ACTIVATE("Activate"), // Activate an Item.
+    DEACTIVATE("Deactivate"), // Deactivate an Item.
+
+    // Do NOT taunt Happy Fun Ball!!! (https://www.youtube.com/watch?v=GmqeZl8OI2M)
+    TAUNT("Taunt"); // This is here for fun.  Feel free to use it if you want.
+
+    // The string representation of the command.
+    private final List<String> commandList;
+
+    /**
+     * Constructor for the ItemInteractionEvent enum.
+     *
+     * @param commandStrings The string representation of the command.
+     */
+    ItemInteractionEvent(final String... commandStrings) {
+        this.commandList = Arrays.stream(commandStrings)
+                                 .map(String::toUpperCase)
+                                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Gets the direction object based on the text that was entered.
+     *
+     * @param lexeme the string name of the direction to map to a real Direction object.
+     * @return the Direction object created from the string as an Optional which will be empty if
+     * the direction string could not be parsed.
+     */
+    public static Optional<ItemInteractionEvent> actionFromLexeme(final String lexeme) {
+        for (var action : values()) {
+            if (action.commandList.contains(lexeme.trim())) {
+                return Optional.of(action);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Gets the string representation of the command for debugging purposes.
+     *
+     * @return The string representation of the command.
+     */
+
+    public String getName() {
+        return this.name();
+    }
+
+    public String getAliases() {
+        return this.commandList.stream()
+                .map(String::toUpperCase)
+                .collect(Collectors.joining(", "));
+    }
+
+    /**
+     * Gets the string representation of the command for debugging purposes.
+     *
+     * @return The string representation of the command.
+     */
+    @Override
+    public String toString() {
+        return "Verb{" + "commandString=" + this.name() + '}';
+    }
+}

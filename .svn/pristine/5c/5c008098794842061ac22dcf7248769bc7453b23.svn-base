@@ -1,0 +1,220 @@
+package objectAdventure.item.itemImpl;
+
+import objectAdventure.common.Observable;
+import objectAdventure.common.Observer;
+import objectAdventure.item.InteractionResult;
+import objectAdventure.item.Item;
+import objectAdventure.item.ItemInteractionEvent;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * A sample item for demonstration purposes.
+ *
+ * @author Kapil Regmi,  COSC436
+ */
+public class KapilsItemMilkshake implements Item, Observable<String> {
+
+    private String description;
+    private String displayName;
+    private boolean broken;
+    private boolean taken;
+    private boolean used;
+    private boolean isAnchored;
+
+    List<Observer<String>> observers = new ArrayList<Observer<String>>();
+
+    /**
+     * Constructor
+     */
+    public KapilsItemMilkshake() {
+        this.displayName = "Oreo Milkshake";
+        this.description = "It's a milkshake that can be consumed for attack buff.";
+        this.isAnchored = false;
+        this.broken = false;
+        this.taken = false;
+        this.used = false;
+    }
+
+    /**
+     * @return The item description.
+     */
+    @Override
+    public String getItemFullDescription() {
+        return this.description;
+    }
+
+    @Override
+    public String getItemDisplayName() {
+        return this.displayName;
+    }
+
+    // /**
+    //  * Change the anchor status of the milkshake.
+    //  * @param anchored
+    //  */
+    // public void setAnchored(boolean anchored) {
+    //     isAnchored = anchored;
+    // }
+
+    /**
+     * Item Can be picked up and moved.
+     *
+     * @return True
+     */
+    @Override
+    public boolean isTransferable() {
+        return !this.isAnchored;
+    }
+
+    @Override
+    public List<String> getItemAliases() {
+        return List.of("Milkshake", "Oreo Milkshake"); // comment for later: no other names for the milkshake that the user can refer to it as?
+    }
+
+    @Override
+    public void addObserver(Observer<String> theObserver) {
+        this.observers.add(theObserver);
+    }
+
+    @Override
+    public void removeObserver(Observer<String> theObserver) {
+        this.observers.remove(theObserver);
+    }
+
+    @Override
+    public void notifyObservers(String notificationObject) {
+        for (var observer: this.observers) {
+            observer.update(notificationObject);
+        }
+    }
+
+    /**
+     * Item Interaction Example
+     *
+     * @see objectAdventure.item.ItemInteractionEvent
+     **/
+    @Override
+    public InteractionResult itemInteractionHandler(ItemInteractionEvent ie) {
+        String updatedRoomDesc;
+        //KapilsRoom room = new KapilsRoom(29);
+        switch(ie) {
+            case TAKE:
+                if (broken == false && used == false) {
+                    // remove the milkshake from the description
+                    updatedRoomDesc = 
+                        "You are in the dining hall. "
+                        + "The room is eerily silent, except for the faint, ominous music that emanates from the jukebox in the corner. "
+                        + "The tables are empty and the air feels heavy with an unexplained dread. "
+                        + "To the west, you notice a narrow, dark path leading off into the unknown. ";
+                    //this.displayName = "Looted Oreo milkshake.";
+                    this.taken = true;
+                    notifyObservers(updatedRoomDesc);
+                    return InteractionResult.success("You picked up the " + this.getItemDisplayName() + "\n" + this.getItemFullDescription());
+                }
+                // cannot take item is item is already used
+                // cannot take item if item is broken on the floor
+                else if (broken == true) {
+                    InteractionResult.failure("Milkshake is spilled all over the floor. You don't want that.");
+                }
+                else if (used == true) {
+                    InteractionResult.failure("You already drank the milkshake. There isn't any more to take!");
+                }
+                else {
+                    //return InteractionResult.failure("What are you trying to do? The milkshake is spilled all over the floor. You can't take it.");
+                    InteractionResult.success("hello testing");
+                }
+            case DROP:
+                if (broken == false && used == false) {
+                    updatedRoomDesc = 
+                        "You have entered the dining hall. "
+                        + "The room is eerily silent, except for the faint, ominous music that emanates from the jukebox in the corner. "
+                        + "The tables are empty and the air feels heavy with an unexplained dread. "
+                        + "By one of the nearby tables, there is broken glass something spilled all over the floor. "
+                        + "It looks like Oreo milkshake. "
+                        + "I wonder who made the mess. "
+                        + "To the west, you notice a narrow, dark path leading off into the unknown. ";
+                    notifyObservers(updatedRoomDesc);
+                    //this.displayName = "Broken glass of Oreo milkshake";
+                    return InteractionResult.success("You dropped the Oreo milkshake on the floor and made a big mess.");
+                }
+                else if (used == true) {
+                    return InteractionResult.failure("There aren't any more milkshakes. You already drank it.");
+                }
+                else {
+                    return InteractionResult.failure("You already broke the delicious, cold Oreo milkshake on the floor and made a big mess.");
+
+                }
+            case INSPECT:
+                if (broken == false && used == false) {
+                    return InteractionResult.success("It appears to be an Oreo milkshake and is still cold to the touch. Must have been made recently.");
+                }
+                else if (broken == true) {
+                    return InteractionResult.success("There seems to be milkshake spilled on the floor. Are those Oreo chunks?");
+
+                }
+                else {
+                    return InteractionResult.failure("Might be a bit too late for that. You already drank it.");
+
+                }
+            // use means drink
+            // consumable so if used after taking item (ie. adding to inventory), need to remove from inventory
+            case USE:
+                // can still use if taken already
+                if (broken == false && used == false && taken == true) {
+                    updatedRoomDesc = 
+                        "You have entered the dining hall. "
+                        + "The room is eerily silent, except for the faint, ominous music that emanates from the jukebox in the corner. "
+                        + "The tables are empty and the air feels heavy with an unexplained dread. "
+                        + "To the west, you notice a narrow, dark path leading off into the unknown. ";
+                    notifyObservers(updatedRoomDesc);
+                    this.description = "Empty glass of Oreo milkshake. It appears someone has drank it not too long ago."
+                                    +  "There are still crumbs of Oreo left inside the walls of the glass.";
+                    this.used = true;
+                    
+                    // remove item from room
+                    // remove item if in player inventory
+                    // removeItem(this);
+
+                    return InteractionResult.success("You drank the " + this.getItemDisplayName());
+                }
+                else if (broken == false && used == false && taken == false) {
+                    return InteractionResult.failure("Take the milkshake first before trying to use it.");
+                }
+                else if (broken == false && used == true) {
+                    return InteractionResult.failure("You already drank the delicious Oreo milkshake and got an attack buff.");
+                }
+                // if broken. i don't think it's possible for it to be broken and used.
+                else {
+                    return InteractionResult.failure("You're not gonna use the Oreo milkshake that's spilled all over the floor. That's disgusting. You'll just have to do without an attack buff.");
+                }
+            case PUSH:
+                if (broken == false && taken == false && used == false) {
+                    updatedRoomDesc = 
+                        "You have entered the dining hall. "
+                        + "The room is eerily silent, except for the faint, ominous music that emanates from the jukebox in the corner. "
+                        + "The tables are empty and the air feels heavy with an unexplained dread. "
+                        + "By one of the nearby tables, there is broken glass and something spilled all over the floor. "
+                        + "It looks like Oreo milkshake. "
+                        + "I wonder who made the mess. "
+                        + "To the west, you notice a narrow, dark path leading off into the unknown. ";
+                    notifyObservers(updatedRoomDesc);
+                    this.displayName = "broken glass of Oreo milkshake on the floor";
+                    this.broken = true;
+                    return InteractionResult.success("You pushed the Oreo milkshake off of the table onto the floor and made a big mess.");
+                }
+                else if (broken == true) {
+                    return InteractionResult.failure("Can you calm down! You already pushed the delicious, cold Oreo milkshake onto the floor and made a big mess.");
+                }
+                else if (used == true) {
+                    return InteractionResult.failure("It's not on the table anymore. You already drank it.");
+                }
+                else if (taken == true) {
+                    return InteractionResult.failure("It's not on the table anymore. You already took it.");
+                }
+            default:
+                // Interactions not handled by this item should be handled by the game core.
+                return InteractionResult.success();
+        }
+    }
+}

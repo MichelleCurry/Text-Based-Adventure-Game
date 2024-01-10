@@ -1,0 +1,51 @@
+package objectAdventure.item.itemImpl;
+
+import objectAdventure.item.Item;
+
+import java.util.List;
+
+public class RedPaddle2_ec implements Item{
+
+    private final String description;
+    private final String displayName;
+
+    public RedPaddle2_ec() {
+        this.displayName = "Rookie Ping Pong Paddle";
+        this.description = """
+                This is a red ping pong paddle fresh out of it's packaging,
+                it smells pleasantly similar to grass in spring,
+                and is firm to the touch.
+                It has an aura of a first time player!
+                                                    """;
+    }
+
+
+    @Override
+    public String getItemFullDescription() {
+        return this.description;
+    }
+
+    @Override
+    public String getItemDisplayName() {
+        return this.displayName;
+    }
+
+    /**
+     * Item Can be picked up and moved.
+     *
+     * @return True
+     */
+    @Override
+    public boolean isTransferable() {
+        boolean isAnchored = false;
+        return !isAnchored;
+    }
+
+    @Override
+    public List<String> getItemAliases() {
+        return List.of("Paddle", "Ping Pong Paddle");
+    }
+
+}
+
+

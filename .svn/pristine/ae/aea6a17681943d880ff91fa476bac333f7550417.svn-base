@@ -1,0 +1,50 @@
+package objectAdventure.item.itemImpl;
+
+import objectAdventure.item.Item;
+
+import java.util.List;
+
+public class RedPaddle1_ec implements Item {
+
+    private final String description;
+    private final String displayName;
+
+    public RedPaddle1_ec() {
+        this.displayName = "Legendary Ping Pong Paddle";
+        this.description = """
+                This is a red ping pong paddle with subtle hints
+                of wear and tear along the edges, it's fairly sticky
+                and it's color has faded over the years.
+                It has an aura of a world champion!
+                                                    """;
+    }
+
+
+    @Override
+    public String getItemFullDescription() {
+        return this.description;
+    }
+
+    @Override
+    public String getItemDisplayName() {
+        return this.displayName;
+    }
+
+    /**
+     * Item Can be picked up and moved.
+     *
+     * @return True
+     */
+    @Override
+    public boolean isTransferable() {
+        boolean isAnchored = false;
+        return !isAnchored;
+    }
+
+    @Override
+    public List<String> getItemAliases() {
+        return List.of("Paddle", "Ping Pong Paddle");
+    }
+
+}
+

@@ -1,0 +1,108 @@
+package objectAdventure.item.itemImpl;
+import objectAdventure.common.Observer;
+import objectAdventure.item.InteractionResult;
+import objectAdventure.item.Item;
+import objectAdventure.item.ItemInteractionEvent;
+import java.util.List;
+import objectAdventure.room.roomImpl.Aperez;
+
+public class Shardblade implements Item{
+    public static String displayName;
+    public static boolean isBonded = false;
+    public static boolean isSummoned = false;
+    static boolean isAnchored = true;
+    static List<String> aliases;
+    private String description;
+    private Aperez room;
+    Observer swordBob;
+
+    public Shardblade(Observer bob) {
+        displayName = "Sword";
+        this.description = "A sword rammed into the ground at the center of the room. Less than 4 inches of the blade can be seen.";
+        swordBob = bob;
+    }
+
+    @Override
+    public String getItemFullDescription() {
+        return this.description;
+    }
+    @Override
+    public String getItemDisplayName() {
+        return displayName;
+    }
+    @Override
+    public boolean isTransferable() {
+        return !isAnchored;
+    }
+    @Override
+    public List<String> getItemAliases() {
+            if (displayName.toUpperCase().equals("SWORD")){
+            return List.of("sword","Sword");
+        }
+        return List.of("sword", "Sword", "blade", "Blade","Shardblade","shardblade");
+    }
+    public List<String> aliases(){
+        return getItemAliases();
+    }
+
+    @Override
+    public InteractionResult itemInteractionHandler(ItemInteractionEvent ie) {
+        return switch (ie) {
+            case DROP -> InteractionResult.failure("*** You can't drop the sword. ***");
+
+            case TAKE -> {
+                this.displayName = "shardblade";
+                this.isSummoned = true;
+                this.room.removeItem(this);
+                room.blocked = true;
+                this.room.setRoomDescription("An empty stone room. The doorway you entered through is now closed off by a large stone.");
+                System.out.print("The long sinuous sword slides out of the stone. You feel a connection with the weapon as if it were an old friend.\nYour skin begins glowing.");
+                System.out.println("You hear the grinding of stone against stone followed by a slam.");
+                yield InteractionResult.success("You did it hurray!");
+            }
+
+            case INSPECT -> {
+                if (isBonded && isSummoned) {
+                    this.description = "A six foot long, curved sword. It feels strangely light in your hands.";
+                }
+                if (isBonded && !isSummoned) {
+                    this.description = "Despite not being in your hands, you still feel a connection with your shardblade.";
+                }
+                if (!isBonded){
+                    this.description = "The sword seems deep in the stone.";
+                }
+                yield InteractionResult.success(this.description);
+            }
+            case ACTIVATE -> {
+                if (isBonded) {
+                    if (!this.isSummoned) {
+                        room.infused = true;
+                        this.isSummoned = true;
+                        yield InteractionResult.success("Your shardblade coaleses from mist and falls into your hand.\nYou see a faint glow start beneath your skin.");
+                    }
+                }
+                yield InteractionResult.failure("*** Message for: " + ie.name());
+            }
+            case DEACTIVATE -> {
+                if (isBonded) {
+                    if (this.isSummoned) {
+                        room.infused = false;
+                        this.isSummoned = false;
+                        var sb = new StringBuilder();
+                        sb.append("You drop the shardblade, it turns to mist and vanishes.\nThe glow of your skin winks out");
+                        if(room.lashed){
+                            sb.append(", and you fall to the ground.");
+                        }else{
+                            sb.append(".");
+                        }
+                        yield InteractionResult.success(sb.toString());
+                    }
+                }
+                yield InteractionResult.failure("*** Message for: " + ie.name());
+            }
+
+            default -> InteractionResult.failure("You can't do that with the sword.");
+        };
+    }
+}
+

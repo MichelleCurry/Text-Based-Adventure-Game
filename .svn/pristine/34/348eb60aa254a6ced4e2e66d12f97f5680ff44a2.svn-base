@@ -1,0 +1,85 @@
+package objectAdventure.item.itemImpl;
+// $Date$
+
+import objectAdventure.item.InteractionResult;
+import objectAdventure.item.Item;
+import objectAdventure.item.ItemInteractionEvent;
+
+import java.util.List;
+
+/**
+ * A sample item for demonstration purposes.
+ *
+ * @author Adam J. Conover, COSC436/COSC716
+ */
+public class DemoItem implements Item {
+
+    private String description;
+    private String displayName;
+
+    /**
+     * Constructor
+     */
+    public DemoItem() {
+        this.displayName = "Demonstration Item";
+        this.description = "An item for demonstration purposes.";
+    }
+
+    /**
+     * THIS IS JUST A SAMPLE.
+     *
+     * @return The item description.
+     */
+    @Override
+    public String getItemFullDescription() {
+        return this.description;
+    }
+
+    /**
+     * Item Can be picked up and moved.
+     *
+     * @return True
+     */
+    @Override
+    public boolean isTransferable() {
+        boolean isAnchored = false;
+        return !isAnchored;
+    }
+
+    @Override
+    public List<String> getItemAliases() {
+        return List.of("Demo", "Demo Item", "Demonstration Item", "Mysterious thing");
+    }
+
+    /**
+     * Item Interaction Example
+     *
+     * @see objectAdventure.item.ItemInteractionEvent
+     **/
+    @Override
+    public InteractionResult itemInteractionHandler(ItemInteractionEvent ie) {
+        switch (ie) {
+            case TAKE:
+                // Do whatever you want when an item is picked up.
+
+                this.displayName = "Looted Demo Item.";
+                // Then return a success message.
+                return InteractionResult.success("You picked up the " + this.getItemDisplayName());
+            case USE:
+                // Do whatever you want when an item is picked up.
+
+                this.description = "A slightly used demonstration item.";
+
+                // Then return a success message.
+                return InteractionResult.success("You use the " + this.getItemDisplayName());
+            default:
+                // Interactions not handled by this item should be handled by the game core.
+                return InteractionResult.success();
+        }
+    }
+
+    @Override
+    public String getItemDisplayName() {
+        return this.displayName;
+    }
+}

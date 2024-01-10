@@ -1,0 +1,42 @@
+package objectAdventure.room.roomImpl;
+
+import objectAdventure.item.itemImpl.RedPaddle1_ec;
+import objectAdventure.item.itemImpl.RedPaddle2_ec;
+import objectAdventure.room.Room;
+
+public class EClay2 extends Room{
+    //Room ID : 24
+    private String eclay2roomDesc = """
+                                You enter a dark open space.
+                                The walls are lined with lit candles
+                                giving off faint blue-ish light.
+                                In the center of the room is a single ceiling light,
+                                and underneath it is a green table.
+                                The table is lined with white lines and is split with a newly stringed net.
+                                Two red paddles and a white ball rest near it's edge.
+                                Theres a sign on the north wall that reads something.
+                                                                                 """;
+
+    private final String eclay2signDesc = "This sign reads \"Dueling Grounds\"";
+    /**
+     * Constructor for the room, it must be constructed with an ID!!!
+     */
+    public EClay2(final int roomId) {
+        // The room ID must be set.
+        super(roomId);
+
+        super.setRoomDescription(eclay2roomDesc);
+
+        super.addItem(new RedPaddle1_ec());
+        super.addItem(new RedPaddle2_ec());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getRoomAuthor() {
+        return "Everett Clay";
+    }
+
+}

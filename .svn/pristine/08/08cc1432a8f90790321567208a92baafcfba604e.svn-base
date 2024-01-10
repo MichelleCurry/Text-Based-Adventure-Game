@@ -1,0 +1,112 @@
+package objectAdventure.item.itemImpl;
+
+import objectAdventure.common.Observable;
+import objectAdventure.common.Observer;
+import objectAdventure.item.*;
+import java.util.List;
+
+import java.util.*;
+
+/**
+ * A sample item for demonstration purposes.
+ *
+ * @author Michele Curry, COSC436/COSC716
+ */
+public class bottle_mlc implements Item, Observable<String> {
+
+    private String description;
+    private boolean isPlayerHoldingBottle = false;
+    private final String displayName;
+
+    List<Observer<String>> observers = new LinkedList<>();
+    /**
+     * Constructor
+     */
+    public bottle_mlc() {
+        this.displayName = "Glass Bottle";
+        this.description = "The bottle is quite dusty but there is still a deep mahogany liquid inside";
+    }
+
+    /**
+     * THIS IS JUST A SAMPLE.
+     *
+     * @return The item description.
+     */
+    @Override
+    public String getItemFullDescription() {
+        return this.description;
+    }
+
+    @Override
+    public String getItemDisplayName() {
+        return this.displayName;
+    }
+
+    /**
+     * Item Can be picked up and moved.
+     *
+     * @return True
+     */
+    @Override
+    public boolean isTransferable() {
+        boolean isAnchored = false;
+        return !isAnchored;
+    }
+
+    @Override
+    public List<String> getItemAliases() {
+        return List.of("bottle", "glass bottle");
+    }
+
+    @Override
+    public void addObserver(Observer<String> theObserver) {
+        this.observers.add(theObserver);
+    }
+
+    @Override
+    public void removeObserver(Observer<String> theObserver) {
+       this.observers.remove(theObserver);
+    }
+
+    @Override
+    public void notifyObservers(String notificationObject) {
+        for(var observer: this.observers){
+            observer.update(notificationObject);
+        }
+    }
+
+    /**
+     * Item Interaction Example
+     *
+     * @see objectAdventure.item.ItemInteractionEvent
+     **/
+    @Override
+    public InteractionResult itemInteractionHandler(ItemInteractionEvent ie) {
+        return switch (ie) {
+            case TAKE:
+                isPlayerHoldingBottle = true;
+                this.description = "You picked up the bottle from the counter.";
+                yield InteractionResult.success("You take the " + this.getItemDisplayName());
+            case USE:
+                if (isPlayerHoldingBottle) {
+                    this.description = "You drink the liquid. Its the worst thing you've ever tasted, you think you might faint.";
+                    yield InteractionResult.success(this.getItemDisplayName());
+                } else {
+                    yield InteractionResult.failure("You must be holding the bottle to use it!");
+                }
+            case INSPECT:
+                this.description = """
+                    The bottle is open but still half full; the liquid inside is a disgusting reddish brown, probably from age.
+                    The liquid smell like bubble gum.
+                """;
+                yield InteractionResult.success(this.getItemFullDescription());
+            case DROP:
+                isPlayerHoldingBottle = false;
+                this.description = "You throw the bottle, it smashes on the ground into a million pieces";
+                yield InteractionResult.success(this.getItemFullDescription());
+            default:
+                // Interactions not handled by this item should be handled by the game core.
+                yield InteractionResult.success("The bottle does not respond to that action.");
+        };
+    }
+}

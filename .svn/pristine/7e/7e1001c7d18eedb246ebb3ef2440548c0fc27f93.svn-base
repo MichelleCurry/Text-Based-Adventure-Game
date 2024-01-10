@@ -1,0 +1,14 @@
+package objectAdventure.common;
+// $Id$
+
+/**
+ * Interface for any object that can intercept input.
+ * <p>
+ * An input interceptor can be used to modify the input before it is processed.
+ *
+ * @author Adam J. Conover, COSC436/COSC716
+ */
+@FunctionalInterface
+public interface InputInterceptor {
+    String interceptInput(String inputLine);
+}

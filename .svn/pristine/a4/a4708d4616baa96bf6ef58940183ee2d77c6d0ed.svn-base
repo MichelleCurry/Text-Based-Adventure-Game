@@ -1,0 +1,176 @@
+package objectAdventure.room.roomImpl;
+
+import objectAdventure.common.Observer;
+import objectAdventure.item.itemImpl.Shardblade;
+import objectAdventure.item.itemImpl.WoK;
+import objectAdventure.room.Room;
+import objectAdventure.common.InputInterceptor;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+
+public class Aperez extends Room implements InputInterceptor{
+    private int lashDir = 0;
+    public boolean hasBlade = false;
+    public boolean infused = false;
+    public boolean lashed = false;
+    public boolean blocked = false;
+    Shardblade sword;
+    WoK book;
+
+    Observer bob = new Observer(){
+        @Override
+        public void update(Object object) {
+            if(object == sword){
+                System.out.println("Sword event");
+            }
+            if(object == book){
+                System.out.println("Book event");
+            }
+        }
+    };
+    /*
+     * 0 = down
+     * 1 = up
+     * 2 = north
+     * 3 = south
+     * 4 = east
+     * 5 = west
+     */
+    public Aperez(int roomId) {
+        super(roomId);
+        interceptInput("");
+        sword = new Shardblade(bob);
+        book = new WoK(bob);
+        super.setRoomDescription("A large stone room. There is a sword stabbed in the center of the room.\nLess than 5 inches of its silvery blade are exposed to the air; its ornate hilt made entirely of the same metal the sword is.\nA book lays to the right as if tossed carelessly to the side. ");
+        super.addItem(book);
+        super.addItem(book);
+    }
+    @Override
+    public String getRoomAuthor() {
+        return "Alex Perez";
+    }
+    @Override
+    /**
+     * @param description the description of the room.
+     */
+    public void setRoomDescription(final String description) {
+        super.setRoomDescription(description);  // NOTE: the field in the super class should remain private. -- AJC 2020-04-30
+    }
+    @Override
+    public String interceptInput(String s) {
+        String output = "";
+        String first = s.split(" ")[0];
+
+        String second;
+        try {second = s.split(" ")[1];}
+        catch (Exception e) {second = "";}
+
+        String third;
+        try {third = s.split(" ")[2];}
+        catch (Exception e) {third = "";}
+    
+        String four;
+        try {four = s.split(" ")[3];}
+        catch (Exception e) {four = "";}
+
+        if((c(first,"TAKE") ||
+            c(first,"INSPECT") ||
+            c(first,"ACTIVATE") ||
+            c(first,"DEACTIVATE") ||
+            c(first,"L") && (lashDir == 0))){
+            return first + " " + second;
+        }else if(lashDir != 0){
+            output = "You cannot do that while lashed away from the ground!";
+        }
+
+        if(c(first,"NORTH","N")) {
+            output = "The exit to the north is blocked by stone.";
+        }
+
+        if(c(first, "READ","USE") &&
+           c(second, book.aliases())){
+            return "USE " + "book";
+        }
+
+        if(c(first,ali(new String[] {"summon","call"})) &&
+           c(second,sword.aliases()))
+            return "activate sword";
+        
+        if(c(first,ali(new String[] {"dismiss","drop"})) &&
+           c(second,sword.aliases()))
+            return "deactivate sword";
+
+        if(c(first,"USE") &&
+           c(second,sword.aliases()) && sword.isSummoned){
+            blocked = false;
+            output = "The shardblade's infinitely sharp blade cuts through the stone blocking the entrance.";
+        }else if (!Shardblade.isSummoned){
+            
+        }
+        //Do you believe in gravity?
+        if(c(first,"LASH") && hasBlade && !lashed){
+            if(infused){
+                if(c(second,"SELF")){
+                    lashed = true;
+                    if(c(third,"UP")){
+                        lashDir = 1;
+                        output = ("The floor becomes the ceiling and you fall upwards.\nYou hit your head before coming to a stop.");
+                    }
+                    if(c(third,"NORTH")){
+                        lashDir = 2;
+                        output = ("The floor becomes the ceiling and you fall towards the wall with the blocked door.");
+                    }
+                    if(c(third,"SOUTH")){
+                        lashDir = 3;
+                        output = ("The wall with the blocked door becomes the ceiling.\nYou slide on the ground, looking at the door on what is now the ceiling.");
+                    }
+                    if(c(third,"EAST")){
+                        lashDir = 4;
+                        output = ("The floor becomes a wall as you slide on the floor toward the eastern wall.");
+                    }
+                    if(c(third,"WEST")){
+                        lashDir = 5;
+                        output = ("The floor becomes a wall as you slide on the floor toward the western wall.");
+                    }
+                }
+            }
+        }
+        if(lashed && !infused){
+            lashDir  = 0;
+            output = ("You fall to the floor.");
+        }
+        System.out.println(output);
+        return "";
+    }
+    //compare 2 string
+    private boolean c(String s1, String s2){
+        return s1.toUpperCase().equals(s2.toUpperCase());
+    }
+
+    //compare string w/ alias list
+    private boolean c(String s1, List<String> sList){
+        int len;
+        try {
+            len = sList.size();
+        } catch (Exception e) {
+            len = 0;
+        }
+        for(int i = 0; i < len; i++)
+            if(c(s1, sList.get(i)))
+                return true;
+        return false;
+    }
+    
+    //compare s1 with s2 and s3
+    private boolean c(String s1, String s2, String s3){
+        if(c(s1, s2) || c(s1,s3))
+           return true;
+        return false;
+    }
+
+    private List<String> ali(String[] sArray){
+        return Stream.of(sArray).collect(Collectors.toList());
+    } 
+}
